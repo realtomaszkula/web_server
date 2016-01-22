@@ -26,6 +26,20 @@ socket.puts(request)
 
 puts "server response ...\n#{response.join("\n")} "
 
+  ## parsing length out of the header
+  content_length = response.select {|line| line =~ /Content-Length:/}.to_s.gsub(/\D/, "").to_i
+
+
+
+
+#  response = []
+#   while(length > 0) line = socket.gets
+#     response << line.chomp
+#     length  -= 1
+#   end
+
+# puts "server response ...\n#{response.join("\n")} "
+
 socket.close
 
 
