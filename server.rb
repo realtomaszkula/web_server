@@ -34,8 +34,8 @@ def start
   when 'POST'
     get_length
     get_body
-    p @body
-    close
+    get_params
+    p @params
   end
 
   }
@@ -73,6 +73,10 @@ end
 
   def get_body
     @body = @client.read(@length)
+  end
+
+  def get_params
+    @params = JSON.parse(@body)
   end
 
   def close
