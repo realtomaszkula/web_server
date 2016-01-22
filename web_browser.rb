@@ -2,7 +2,7 @@ require 'socket'
 
 host = 'localhost'
 port = 2000
-path = "index.html"
+path = "iasdndex.html"
 
 
 socket = TCPSocket.new host,port
@@ -27,16 +27,16 @@ socket.puts(request)
 
   puts "server head response ...\n#{response.join("\n")} "
 
-  ## parsing length out of the header
-  content_length = response.select {|line| line =~ /Content-Length:/}.to_s.gsub(/\D/, "").to_i
+  if response[0].split(" ")[0].to_i != 404
+    ## parsing length out of the header
+    content_length = response.select {|line| line =~ /Content-Length:/}.to_s.gsub(/\D/, "").to_i
 
-## response body
-  body = socket.read(content_length)
+    ## response body
+    body = socket.read(content_length)
 
-  puts "\nserver body response ...\n#{body} "
+    puts "\nserver body response ...\n#{body} "
 
-
-# puts "server response ...\n#{response.join("\n")} "
+  end
 
 socket.close
 

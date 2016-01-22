@@ -18,24 +18,33 @@ loop  {
   ### RESPONSE
 
   ## status line
-  status_code = "200 OK"
-  status_line = "HTTP/1.1 #{status_code}\n"
+  code = {
+    200 => "200 OK",
+    404 => "404 Not Found"
+  }
 
-  ## headers
-  date = "Date: #{Time.now.ctime}"
-  content_type = "Content-Type: text/html"
-  content_length = "Content-Length: #{File.size(fname)}"
-  headers = date + "\r\n" + content_type + "\r\n" + content_length.to_s + "\r\n\r\n"
+  status_code = File.exists?(fname)  ? code[200] : code[404]
 
-  ## body
-  body = File.read(fname)
+  if status_code == code[404]
+    client.puts status_code
+  else
+    status_line = "HTTP/1.1 #{status_code}\n"
+    ## headers
+    date = "Date: #{Time.now.ctime}"
+    content_type = "Content-Type: text/html"
+    content_length = "Content-Length: #{File.size(fname)}"
+    headers = date + "\r\n" + content_type + "\r\n" + content_length.to_s + "\r\n\r\n"
 
-  ## full server response
-  response = status_line + headers
-  client.puts response
+    ## body
+    body = File.read(fname)
 
-  response = body
-  client.puts response
+    ## server response
+    response = status_line + headers
+    client.puts response
+
+    response = body
+    client.puts response
+  end
 
   client.close
 }
