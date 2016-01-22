@@ -50,17 +50,3 @@ loop  {
   client.close
 }
 
-
-
-puts "What do you wan to do?"
-puts "ex. of input GET www.google.com/index.html"
-
-input = gets.chomp.split(" ")
-
-verb = input[0]
-host, path = input[1].split("/")
-
-puts "#{verb}, #{host}, #{path}"
-
-
-# GET localhost/index.html

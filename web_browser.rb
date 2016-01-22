@@ -1,15 +1,11 @@
 require 'socket'
 
 class WebBrowser
-  def initialize(host, path, verb)
-    @verb = verb
-    @host = host
-    @path = path
+  def initialize
     @HTTP = "HTTP/1.0"
     @email = "test@test.com"
     @user_agent = "HTTPTool/1.0"
     @port = 2000
-    @socket = TCPSocket.new(@host, @port)
     @code = nil
     start
   end
@@ -17,11 +13,33 @@ class WebBrowser
   private
 
   def start
-    request
-    get_headers
-    get_code
-    response
-    close
+    what_to_do
+
+    case @verb
+    when "GET"
+      get_url
+      open_socket
+      request
+      get_headers
+      get_code
+      response
+      close_socket
+    when "POST"
+    end
+  end
+
+  def what_to_do
+    puts "What do you wan to do? ex. GET"
+    @verb = gets.chomp.upcase
+  end
+
+  def get_url
+    puts "Enter URL, ex localhost/index.html"
+    @host, @path = gets.chomp.split("/")
+  end
+
+  def open_socket
+    @socket = TCPSocket.new(@host, @port)
   end
 
   def request
@@ -64,21 +82,20 @@ class WebBrowser
     puts "Error 404, Not Found!"
   end
 
-  def close
+  def close_socket
     @socket.close
   end
 
 end
 
-puts "What do you wan to do?"
-puts "ex. of input GET www.google.com/index.html"
+puts "ex. GET www.google.com/index.html"
+puts "ex. POST www.google.com/index.html"
 
-input = gets.chomp.split(" ")
 
-verb = input[0]
-host, path = input[1].split("/")
 
-WebBrowser.new(host, path, verb)
+
+
+WebBrowser.new
 
 
 
