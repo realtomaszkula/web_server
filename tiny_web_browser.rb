@@ -4,11 +4,19 @@ host = 'localhost'
 port = 2000
 path = "index.html"
 
-request = "GET #{path} HTTP/1.0\r\n\r\n"
 
-socket = TCPSocket.open(host,port)
-socket.print(request).read
-puts socket
+socket = TCPSocket.new host,port
 
-# headers,body = response.split("\r\n\r\n", 2)
-# print body
+## request
+request_line = "GET #{path} HTTP/1.0\r\n"
+header = "From: tomaszkula@mail.com\r\nUser-Agent: HTTPTool/1.0\r\n\r\n"
+
+request = request_line + header
+socket.puts(request)
+
+puts socket.gets
+
+socket.close
+
+puts "finished!"
+

@@ -1,12 +1,15 @@
 require 'socket'
 
-server = TCPServer.open(2000)
+server = TCPServer.open("localhost",2000)
 
-loop {
+loop  {
   client = server.accept
 
+  puts request = client.gets
 
-  puts  "#{request = client.read.split}"
+
+  ## requested file name
+  name = "index.html"
 
   ## status line
   status_code = "200 OK"
@@ -15,16 +18,18 @@ loop {
   ## headers
   date = "Date: #{Time.now.ctime}"
   content_type = "Content-Type: text/html"
-  content_length = "Content-Length: 123"
+  content_length = "Content-Length: #{File.size(name)}"
   headers = date + "\n" + content_type + "\n" + content_length.to_s + "\n\n"
 
-  # body
-  name = "index.html"
+  ## body
   body = File.read(name)
 
-  # full server response
-  puts "#{response = status_line + headers + body}"
+  ## full server response
+  response = status_line + headers + body
+
+  puts "#{response}"
 
   client.puts response
+  puts "response sent"
   client.close
 }
