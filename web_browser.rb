@@ -19,24 +19,22 @@ puts "requesting ... \n#{request}"
 
 socket.puts(request)
 
+## response headers
  response = []
   while line = socket.gets and line !~ /^\s*$/
     response << line.chomp
   end
 
-puts "server response ...\n#{response.join("\n")} "
+  puts "server head response ...\n#{response.join("\n")} "
 
   ## parsing length out of the header
   content_length = response.select {|line| line =~ /Content-Length:/}.to_s.gsub(/\D/, "").to_i
 
+## response body
+  body = socket.read(content_length)
 
+  puts "\nserver body response ...\n#{body} "
 
-
-#  response = []
-#   while(length > 0) line = socket.gets
-#     response << line.chomp
-#     length  -= 1
-#   end
 
 # puts "server response ...\n#{response.join("\n")} "
 
