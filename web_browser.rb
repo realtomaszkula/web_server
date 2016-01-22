@@ -23,24 +23,25 @@ class WebBrowser
       send_request
       recieve_headers
       read_status_code
-      get_body
+      recieve_body
       close_socket
     when "POST"
-      set_body
+      ask_for_input
       open_socket
       send_request
       send_body
-      get_result
+      recieve_result
       close_socket
     end
   end
 
+  ## USER MENU
   def what_to_do
     puts "What do you wan to do? GET / POST"
     @verb = gets.chomp
   end
 
-  def set_body
+  def ask_for_input
     results = {viking: {}}
     puts "Viking name"
       results[:viking][:name] =  gets.chomp
@@ -50,24 +51,14 @@ class WebBrowser
   end
 
   def send_body
-    begin
     @socket.puts  @body
-    rescue
-      "\nconnection error, trying again ...\n"
-      send_body
-    end
   end
 
-  def get_result
-    begin
+  def recieve_result
     results = []
       while line = @socket.gets and line !~ /^\s*$/
         results << line.chomp
       end
-    rescue
-      "\nconnection error, trying again ...\n"
-      get_result
-    end
     puts results.join("\n")
   end
 
@@ -104,7 +95,7 @@ class WebBrowser
     @response_headers = headers
   end
 
-  def get_body
+  def recieve_body
     puts "server head response ...\n#{@response_headers.join("\n")} "
     unless @code == 404
       get_length
@@ -132,7 +123,6 @@ class WebBrowser
 end
 
 WebBrowser.new
-
 
 
 
