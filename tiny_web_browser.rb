@@ -9,14 +9,12 @@ socket = TCPSocket.new host,port
 
 ## request
 request_line = "GET #{path} HTTP/1.0\r\n"
-header = "From: tomaszkula@mail.com\r\nUser-Agent: HTTPTool/1.0\r\n\r\n"
+header = "From: tomaszkula@mail.com\r\nUser-Agent: HTTPTool/1.0"
 
-request = request_line + header
+request = request_line + header + "\r\n\r\n"
 socket.puts(request)
 
 puts socket.gets
-
 socket.close
 
-puts "finished!"
 

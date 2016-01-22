@@ -5,11 +5,17 @@ server = TCPServer.open("localhost",2000)
 loop  {
   client = server.accept
 
-  puts request = client.gets
+  ### REQUEST
+  request = []
+  while line = client.gets and line !~ /^\s*$/
+    request << line.chomp
+  end
 
+  rq_status_line  = request[0].split
+  verb = rq_status_line[0]
+  fname = rq_status_line[1]
 
-  ## requested file name
-  name = "index.html"
+  ### RESPONSE
 
   ## status line
   status_code = "200 OK"
@@ -18,8 +24,8 @@ loop  {
   ## headers
   date = "Date: #{Time.now.ctime}"
   content_type = "Content-Type: text/html"
-  content_length = "Content-Length: #{File.size(name)}"
-  headers = date + "\n" + content_type + "\n" + content_length.to_s + "\n\n"
+  content_length = "Content-Length: #{File.size(fname)}"
+  headers = date + "\r\n" + content_type + "\r\n" + content_length.to_s + "\r\n\r\n"
 
   ## body
   body = File.read(name)
@@ -27,9 +33,6 @@ loop  {
   ## full server response
   response = status_line + headers + body
 
-  puts "#{response}"
-
   client.puts response
-  puts "response sent"
   client.close
 }
