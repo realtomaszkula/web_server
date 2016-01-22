@@ -30,33 +30,45 @@ class WebBrowser
       open_socket
       request
       send_body
+      get_result
+      close_socket
     end
   end
 
   def what_to_do
     puts "What do you wan to do? GET / POST"
-    # @verb = gets.chomp
-    @verb = "POST"
+    @verb = gets.chomp
   end
 
   def set_body
     results = {viking: {}}
     puts "Viking name"
-      results[:viking][:name] = "Tomasz"
+      results[:viking][:name] =  gets.chomp
      puts "Viking email"
-      results[:viking][:email] = "mail@mail"
+      results[:viking][:email] = gets.chomp
     @body = results.to_json
   end
 
   def send_body
+    begin
     @socket.puts  @body
+    rescue
+      "\nconnection error, trying again ...\n"
+      send_body
+    end
+  end
+
+  def get_result
+    results = []
+    while line = @socket.gets and line !~ /^\s*$/
+      results << line.chomp
+    end
+    puts results.join("\n")
   end
 
   def get_url
     puts "Enter URL, ex localhost/index.html"
-    # @host, @path = gets.chomp.split("/")
-    @host = "localhost"
-    @path = "index.html"
+    @host, @path = gets.chomp.split("/")
   end
 
   def open_socket
@@ -72,7 +84,7 @@ class WebBrowser
     request = request_line + header1 + header2 + "\r\n"  if @verb == "GET"
     request = request_line + header1 + header2 + header3 + "\r\n"  if @verb == "POST"
 
-    puts "requesting ... \n#{request}"
+    puts "\nrequesting ... \n#{request}"
 
     @socket.puts request
   end
@@ -113,14 +125,9 @@ class WebBrowser
 
 end
 
-puts "ex. GET www.google.com/index.html"
-puts "ex. POST www.google.com/index.html"
-
 WebBrowser.new
 
 
-
-# GET localhost/indasdex.html
 
 
 

@@ -18,10 +18,10 @@ def start
     @fname = @rq_status_line[1]
     get_staus_code
     if @status_code == 404
-     @response = "HTTP/1.1 #{@status_code} OK\n"
+     @response = "HTTP/1.1 #{@status_code} Not Found\n"
      send_response
     else
-     status_line = "HTTP/1.1 #{@status_code} Not Found\n"
+     status_line = "HTTP/1.1 #{@status_code} OK\n"
      headers = get_headers
 
      @response = status_line + headers
@@ -30,15 +30,16 @@ def start
      @response = File.read(@fname)
      send_response
     end
-    close
+
   when 'POST'
     get_length
     get_body
     get_params
 
-    generate_content
-
+   @response = generate_content
+   send_response
   end
+  close
 
   }
 end
@@ -85,8 +86,8 @@ end
 
   def generate_content
     html = File.read("thanks.html")
-    li = "<li>Viking name: #{@params["viking"][:name]}</li><li>Email: #{@params["viking"][:name]}</li>"
-    @content = html.sub(/<%\= yield %>/,li).gsub(/\n/,"").strip.gsub(/>\s+</,"><")
+    li = "<li>Viking name: #{@params["viking"]["name"]}</li><li>Email: #{@params["viking"]["name"]}</li>"
+    html.sub(/<%\= yield %>/,li).gsub(/\n/,"").strip.gsub(/>\s+</,"><")
   end
 
   def close
