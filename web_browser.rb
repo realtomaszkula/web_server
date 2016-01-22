@@ -35,7 +35,7 @@ class WebBrowser
     end
   end
 
-  ## USER MENU
+  ## USER INPUT
   def what_to_do
     puts "What do you wan to do? GET / POST"
     @verb = gets.chomp
@@ -50,47 +50,44 @@ class WebBrowser
     @body = results.to_json
   end
 
-  def send_body
-    @socket.puts  @body
-  end
-
-  def recieve_result
-    results = []
-      while line = @socket.gets and line !~ /^\s*$/
-        results << line.chomp
-      end
-    puts results.join("\n")
-  end
-
   def get_url
     puts "Enter URL, ex localhost/index.html"
     @host, @path = gets.chomp.split("/")
+  end
+
+  ## SOCKET
+
+  def close_socket
+    @socket.close
   end
 
   def open_socket
     @socket = TCPSocket.new(@host, @port)
   end
 
+
+  ## SENDING REQUESTS
+  def send_body
+    @socket.puts  @body
+  end
+
   def send_request
     request_line = "#{@verb} #{@path} \r\n"
-    header1 = "From: #{@email}\r\n"
-    header2 = "User-Agent: #{@user_agent}\r\n"
-    header3 = "Content-Length: #{@body.length}\r\n" if @verb == "POST"
+    headers = create_headers
 
-    request = request_line + header1 + header2 + "\r\n"  if @verb == "GET"
-    request = request_line + header1 + header2 + header3 + "\r\n"  if @verb == "POST"
+    request = request_line + headers + "\r\n"
 
     puts "\nrequesting ... \n#{request}"
 
     @socket.puts request
   end
 
-
+  # RECIEVING
   def recieve_headers
    headers = []
     while line = @socket.gets and line !~ /^\s*$/
       headers << line.chomp
-    end
+  end
 
     @response_headers = headers
   end
@@ -102,6 +99,26 @@ class WebBrowser
       body = @socket.read(@length)
       puts "\nserver body response ...\n#{body} "
     end
+  end
+
+  def recieve_result
+    results = []
+      while line = @socket.gets and line !~ /^\s*$/
+        results << line.chomp
+      end
+    puts results.join("\n")
+  end
+
+
+  def create_headers
+    header1 = "From: #{@email}\r\n"
+    header2 = "User-Agent: #{@user_agent}\r\n"
+    header3 = "Content-Length: #{@body.length}\r\n" if @verb == "POST"
+
+    headers = case @verb
+              when "POST" then header1 + header2 + header3
+              when "GET" then header1 + header2
+              end
   end
 
   def get_length
@@ -116,9 +133,7 @@ class WebBrowser
     puts "Error 404, Not Found!"
   end
 
-  def close_socket
-    @socket.close
-  end
+
 
 end
 
