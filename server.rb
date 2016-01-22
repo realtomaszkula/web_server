@@ -10,43 +10,69 @@ class Server
 
 def start
   loop  {
-    @client = @server.accept
+    accept_client
     analyze_request
 
-  case @verb
-  when 'GET'
-    @fname = @rq_status_line[1]
-    get_staus_code
-    if @status_code == 404
-     @response = "HTTP/1.1 #{@status_code} Not Found\n"
-     send_response
-    else
-     status_line = "HTTP/1.1 #{@status_code} OK\n"
-     headers = get_headers
+    case @verb
+    when 'GET'
+      read_file_name
+      set_status_code
 
-     @response = status_line + headers
-     send_response
+      case @status_code
+      when 404
+       @response = "HTTP/1.1 #{@status_code} Not Found\n"
+       send_response
+      when 200
+       status_line = "HTTP/1.1 #{@status_code} OK\n"
+       headers = create_headers
 
-     @response = File.read(@fname)
+       @response = status_line + headers
+       send_response
+
+       @response = File.read(@fname)
+       send_response
+      end
+
+    when 'POST'
+      read_length
+      read_body
+      parse_body
+
+     @response = generate_content
      send_response
     end
 
-  when 'POST'
-    get_length
-    get_body
-    get_params
-
-   @response = generate_content
-   send_response
-  end
-  close
-
+    close_client
   }
 end
 
+  ## accept connection
+  def accept_client
+    @client = @server.accept
+  end
 
+  ## Initial request, reading verb
+  def analyze_request
+    @request = []
+    while line = @client.gets and line !~ /^\s*$/
+       @request << line.chomp
+    end
 
-  def get_headers
+    @status_line  = @request[0].split
+    @verb = @status_line[0]
+  end
+
+  ## GET request
+
+  def read_file_name
+    @fname = @status_line[1]
+  end
+
+  def set_status_code
+    @status_code = File.exists?(@fname) ? 200 : 404
+  end
+
+  def create_headers
     header1 = "Date: #{Time.now.ctime}\r\n"
     header2 = "Content-Type: text/html\r\n"
     header3 = "Content-Length: #{File.size(@fname)}\r\n"
@@ -57,30 +83,17 @@ end
     @client.puts @response
   end
 
-  def get_staus_code
-    @status_code = File.exists?(@fname) ? 200 : 404
-  end
+  ## POST request
 
-  def analyze_request
-    @request = []
-    while line = @client.gets and line !~ /^\s*$/
-       @request << line.chomp
-    end
-
-    @rq_status_line  = @request[0].split
-    @verb = @rq_status_line[0]
-  end
-
-
-  def get_length
+  def read_length
     @length = @request.select {|line| line =~ /Content-Length:/}.to_s.gsub(/\D/, "").to_i
   end
 
-  def get_body
+  def read_body
     @body = @client.read(@length)
   end
 
-  def get_params
+  def parse_body
     @params = JSON.parse(@body)
   end
 
@@ -90,7 +103,9 @@ end
     html.sub(/<%\= yield %>/,li).gsub(/\n/,"").strip.gsub(/>\s+</,"><")
   end
 
-  def close
+  ## close connection
+
+  def close_client
     @client.close
   end
 

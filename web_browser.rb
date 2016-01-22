@@ -3,11 +3,6 @@ require 'json'
 
 class WebBrowser
   def initialize
-    @HTTP = "HTTP/1.0"
-    @email = "test@test.com"
-    @user_agent = "HTTPTool/1.0"
-    @port = 2000
-    @code = nil
     start
   end
 
@@ -62,25 +57,9 @@ class WebBrowser
   end
 
   def open_socket
-    @socket = TCPSocket.new(@host, @port)
+    @socket = TCPSocket.new(@host, 2000)
   end
 
-
-  ## SENDING REQUESTS
-  def send_body
-    @socket.puts  @body
-  end
-
-  def send_request
-    request_line = "#{@verb} #{@path} \r\n"
-    headers = create_headers
-
-    request = request_line + headers + "\r\n"
-
-    puts "\nrequesting ... \n#{request}"
-
-    @socket.puts request
-  end
 
   # RECIEVING
   def recieve_headers
@@ -95,7 +74,7 @@ class WebBrowser
   def recieve_body
     puts "server head response ...\n#{@response_headers.join("\n")} "
     unless @code == 404
-      get_length
+      read_length
       body = @socket.read(@length)
       puts "\nserver body response ...\n#{body} "
     end
@@ -110,9 +89,25 @@ class WebBrowser
   end
 
 
+  ## SENDING REQUESTS
+  def send_body
+    @socket.puts  @body
+  end
+
+  def send_request
+    request_line = "#{@verb} #{@path} HTTP/1.0\r\n"
+    headers = create_headers
+
+    request = request_line + headers + "\r\n"
+    puts "\nrequesting ... \n#{request}"
+
+    @socket.puts request
+  end
+
+
   def create_headers
-    header1 = "From: #{@email}\r\n"
-    header2 = "User-Agent: #{@user_agent}\r\n"
+    header1 = "From: test@test\r\n"
+    header2 = "User-Agent: test@test.com\r\n"
     header3 = "Content-Length: #{@body.length}\r\n" if @verb == "POST"
 
     headers = case @verb
@@ -121,7 +116,7 @@ class WebBrowser
               end
   end
 
-  def get_length
+  def read_length
     @length = @response_headers.select {|line| line =~ /Content-Length:/}.to_s.gsub(/\D/, "").to_i
   end
 
@@ -132,9 +127,6 @@ class WebBrowser
   def error
     puts "Error 404, Not Found!"
   end
-
-
-
 end
 
 WebBrowser.new
