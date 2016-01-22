@@ -35,11 +35,15 @@ def start
     get_length
     get_body
     get_params
-    p @params
+
+    generate_content
+
   end
 
   }
 end
+
+
 
   def get_headers
     header1 = "Date: #{Time.now.ctime}\r\n"
@@ -77,6 +81,12 @@ end
 
   def get_params
     @params = JSON.parse(@body)
+  end
+
+  def generate_content
+    html = File.read("thanks.html")
+    li = "<li>Viking name: #{@params["viking"][:name]}</li><li>Email: #{@params["viking"][:name]}</li>"
+    @content = html.sub(/<%\= yield %>/,li).gsub(/\n/,"").strip.gsub(/>\s+</,"><")
   end
 
   def close
