@@ -20,15 +20,15 @@ class WebBrowser
     when "GET"
       get_url
       open_socket
-      request
-      get_headers
-      get_code
+      send_request
+      recieve_headers
+      read_status_code
       get_body
       close_socket
     when "POST"
       set_body
       open_socket
-      request
+      send_request
       send_body
       get_result
       close_socket
@@ -59,9 +59,14 @@ class WebBrowser
   end
 
   def get_result
+    begin
     results = []
-    while line = @socket.gets and line !~ /^\s*$/
-      results << line.chomp
+      while line = @socket.gets and line !~ /^\s*$/
+        results << line.chomp
+      end
+    rescue
+      "\nconnection error, trying again ...\n"
+      get_result
     end
     puts results.join("\n")
   end
@@ -75,7 +80,7 @@ class WebBrowser
     @socket = TCPSocket.new(@host, @port)
   end
 
-  def request
+  def send_request
     request_line = "#{@verb} #{@path} \r\n"
     header1 = "From: #{@email}\r\n"
     header2 = "User-Agent: #{@user_agent}\r\n"
@@ -90,11 +95,12 @@ class WebBrowser
   end
 
 
-  def get_headers
+  def recieve_headers
    headers = []
     while line = @socket.gets and line !~ /^\s*$/
       headers << line.chomp
     end
+
     @response_headers = headers
   end
 
@@ -111,7 +117,7 @@ class WebBrowser
     @length = @response_headers.select {|line| line =~ /Content-Length:/}.to_s.gsub(/\D/, "").to_i
   end
 
-  def get_code
+  def read_status_code
     @code = @response_headers[0].split(" ")[1].to_i
   end
 
