@@ -29,13 +29,14 @@ class WebBrowser
       set_body
       open_socket
       request
+      send_body
     end
   end
 
   def what_to_do
     puts "What do you wan to do? GET / POST"
     # @verb = gets.chomp
-    @verb = "GET"
+    @verb = "POST"
   end
 
   def set_body
@@ -45,6 +46,10 @@ class WebBrowser
      puts "Viking email"
       results[:viking][:email] = "mail@mail"
     @body = results.to_json
+  end
+
+  def send_body
+    @socket.puts  @body
   end
 
   def get_url
@@ -69,7 +74,7 @@ class WebBrowser
 
     puts "requesting ... \n#{request}"
 
-    @socket.puts(request)
+    @socket.puts request
   end
 
 

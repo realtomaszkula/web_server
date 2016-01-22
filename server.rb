@@ -15,25 +15,27 @@ def start
 
   case @verb
   when 'GET'
-     @fname = @rq_status_line[1]
-     get_staus_code
-     if @status_code == 404
-      @response = "HTTP/1.1 #{@status_code} OK\n"
-      send_response
-     else
-      status_line = "HTTP/1.1 #{@status_code} Not Found\n"
-      headers = get_headers
+    @fname = @rq_status_line[1]
+    get_staus_code
+    if @status_code == 404
+     @response = "HTTP/1.1 #{@status_code} OK\n"
+     send_response
+    else
+     status_line = "HTTP/1.1 #{@status_code} Not Found\n"
+     headers = get_headers
 
-      @response = status_line + headers
-      send_response
+     @response = status_line + headers
+     send_response
 
-      @response = File.read(@fname)
-      send_response
-     end
-     close
+     @response = File.read(@fname)
+     send_response
+    end
+    close
   when 'POST'
     get_length
-    p @length
+    get_body
+    p @body
+    close
   end
 
   }
@@ -67,6 +69,10 @@ end
 
   def get_length
     @length = @request.select {|line| line =~ /Content-Length:/}.to_s.gsub(/\D/, "").to_i
+  end
+
+  def get_body
+    @body = @client.read(@length)
   end
 
   def close
