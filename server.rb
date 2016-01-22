@@ -1,4 +1,5 @@
 require 'socket'
+require 'json'
 
 server = TCPServer.open("localhost",2000)
 

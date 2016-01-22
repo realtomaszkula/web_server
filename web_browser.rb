@@ -1,4 +1,5 @@
 require 'socket'
+require 'json'
 
 class WebBrowser
   def initialize
@@ -25,12 +26,24 @@ class WebBrowser
       response
       close_socket
     when "POST"
+      get_body
+      open_socket
+      request
     end
   end
 
   def what_to_do
-    puts "What do you wan to do? ex. GET"
+    puts "What do you wan to do? GET / POST"
     @verb = gets.chomp.upcase
+  end
+
+  def get_body
+    results = {viking: {}}
+    puts "Viking name"
+      results[:viking][:name] = "Tomasz"
+     puts "Viking email"
+      results[:viking][:email] = "mail@mail"
+    @body = results.to_json
   end
 
   def get_url
@@ -43,15 +56,18 @@ class WebBrowser
   end
 
   def request
-    puts "\nretrieving ... \n#{@host}/#{@path} #{@HTTP} \n\n"
-
     request_line = "#{@verb} #{@path} \r\n"
-    header = "From: #{@email}\r\nUser-Agent: #{@user_agent}"
-    request = request_line + header + "\r\n\r\n"
+    header1 = "From: #{@email}\r\n"
+    header2 = "User-Agent: #{@user_agent}\r\n"
+    header3 = "Content-Length: #{@body.length}\r\n" if @verb == "POST"
+
+    request = request_line + header1 + header2 + "\r\n"  if @verb == "GET"
+    request = request_line + header1 + header2 + header3 + "\r\n"  if @verb == "POST"
 
     puts "requesting ... \n#{request}"
     @socket.puts(request)
   end
+
 
   def get_headers
    headers = []
@@ -90,10 +106,6 @@ end
 
 puts "ex. GET www.google.com/index.html"
 puts "ex. POST www.google.com/index.html"
-
-
-
-
 
 WebBrowser.new
 
