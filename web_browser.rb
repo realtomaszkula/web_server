@@ -23,7 +23,7 @@ class WebBrowser
       request
       get_headers
       get_code
-      response
+      get_body
       close_socket
     when "POST"
       get_body
@@ -77,7 +77,7 @@ class WebBrowser
     @response_headers = headers
   end
 
-  def response
+  def get_body
     puts "server head response ...\n#{@response_headers.join("\n")} "
     unless @code == 404
       get_length
