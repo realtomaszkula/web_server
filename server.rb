@@ -28,11 +28,14 @@ loop  {
   headers = date + "\r\n" + content_type + "\r\n" + content_length.to_s + "\r\n\r\n"
 
   ## body
-  body = File.read(name)
+  body = File.read(fname)
 
   ## full server response
-  response = status_line + headers + body
-
+  response = status_line + headers
   client.puts response
+
+  response = body
+  client.puts response
+
   client.close
 }
