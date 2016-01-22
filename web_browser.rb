@@ -26,7 +26,7 @@ class WebBrowser
       get_body
       close_socket
     when "POST"
-      get_body
+      set_body
       open_socket
       request
     end
@@ -34,10 +34,11 @@ class WebBrowser
 
   def what_to_do
     puts "What do you wan to do? GET / POST"
-    @verb = gets.chomp.upcase
+    # @verb = gets.chomp
+    @verb = "GET"
   end
 
-  def get_body
+  def set_body
     results = {viking: {}}
     puts "Viking name"
       results[:viking][:name] = "Tomasz"
@@ -48,7 +49,9 @@ class WebBrowser
 
   def get_url
     puts "Enter URL, ex localhost/index.html"
-    @host, @path = gets.chomp.split("/")
+    # @host, @path = gets.chomp.split("/")
+    @host = "localhost"
+    @path = "index.html"
   end
 
   def open_socket
@@ -65,6 +68,7 @@ class WebBrowser
     request = request_line + header1 + header2 + header3 + "\r\n"  if @verb == "POST"
 
     puts "requesting ... \n#{request}"
+
     @socket.puts(request)
   end
 

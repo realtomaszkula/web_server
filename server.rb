@@ -5,61 +5,74 @@ class Server
 
   def initialize
     @server = TCPServer.open("localhost",2000)
-
-
-loop  {
-  @client = @server.accept
-
-  ### REQUEST
-  request = []
-  while line = @client.gets and line !~ /^\s*$/
-    request << line.chomp
+    start
   end
 
-  rq_status_line  = request[0].split
-  @verb = rq_status_line[0]
+def start
+  loop  {
+    @client = @server.accept
+    analyze_request
 
   case @verb
   when 'GET'
-     @fname = rq_status_line[1]
-
-     ### RESPONSE
-     ## status line
-     code = {
-       200 => "200 OK",
-       404 => "404 Not Found"
-     }
-
-     status_code = File.exists?(@fname)  ? code[200] : code[404]
-
-     if status_code == code[404]
-       response = "HTTP/1.1 #{status_code}\n"
-       @client.puts response
+     @fname = @rq_status_line[1]
+     get_staus_code
+     if @status_code == 404
+      @response = "HTTP/1.1 #{@status_code} OK\n"
+      send_response
      else
-       status_line = "HTTP/1.1 #{status_code}\n"
-       ## headers
-       date = "Date: #{Time.now.ctime}"
-       content_type = "Content-Type: text/html"
-       content_length = "Content-Length: #{File.size(@fname)}"
-       headers = date + "\r\n" + content_type + "\r\n" + content_length.to_s + "\r\n\r\n"
+      status_line = "HTTP/1.1 #{@status_code} Not Found\n"
+      headers = get_headers
 
-       ## body
-       body = File.read(@fname)
+      @response = status_line + headers
+      send_response
 
-       ## server response
-       response = status_line + headers
-       @client.puts response
-
-       response = body
-       @client.puts response
-       @client.close
+      @response = File.read(@fname)
+      send_response
      end
+     close
   when 'POST'
+    get_length
+    p @length
+  end
+
+  }
+end
+
+  def get_headers
+    header1 = "Date: #{Time.now.ctime}\r\n"
+    header2 = "Content-Type: text/html\r\n"
+    header3 = "Content-Length: #{File.size(@fname)}\r\n"
+    headers = header1 +  header2 + header3 + "\r\n"
+  end
+
+  def send_response
+    @client.puts @response
+  end
+
+  def get_staus_code
+    @status_code = File.exists?(@fname) ? 200 : 404
+  end
+
+  def analyze_request
+    @request = []
+    while line = @client.gets and line !~ /^\s*$/
+       @request << line.chomp
+    end
+
+    @rq_status_line  = @request[0].split
+    @verb = @rq_status_line[0]
   end
 
 
-}
-end
+  def get_length
+    @length = @request.select {|line| line =~ /Content-Length:/}.to_s.gsub(/\D/, "").to_i
+  end
+
+  def close
+    @client.close
+  end
+
 end
 
 Server.new
